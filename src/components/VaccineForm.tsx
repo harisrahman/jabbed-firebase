@@ -3,7 +3,6 @@ import styled from 'styled-components';
 import Card from './Card';
 import Input from './Input';
 import Button from './Button';
-import { PatientType } from '../Types';
 import { createPatient, updatePatient } from '../api';
 import { usePatients } from '../contexts/PatientsContext';
 import { intialVaccineFormValues, useVaccineForm } from '../contexts/VaccineFormContext';
@@ -24,12 +23,14 @@ export default function VaccineForm()
 			if (patient._id)
 			{
 				updatePatient(patient._id, patient)
-					.then((updatedPatient: PatientType) =>
+					.then(() =>
 					{
-						setPatients(patients.map((patient: PatientType) =>
-						{
-							return updatedPatient._id === patient._id ? updatedPatient : patient;
-						}));
+						// Auto update due observePatients so this code is not needed
+
+						// setPatients(patients.map((p: PatientType) =>
+						// {
+						// 	return p._id === patient._id ? patient : p;
+						// }));
 
 						setVaccineForm(intialVaccineFormValues);
 					})
@@ -42,9 +43,12 @@ export default function VaccineForm()
 			else
 			{
 				createPatient(patient)
-					.then((patient) =>
+					.then(() =>
 					{
-						setPatients(patients.concat(patient));
+						// Auto update due observePatients so this code is not needed
+
+						// setPatients(patients.concat(patient));
+
 						setVaccineForm(intialVaccineFormValues);
 					})
 					.catch((error) =>

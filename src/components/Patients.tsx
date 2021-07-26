@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { PatientType } from '../Types';
 import { usePatients } from '../contexts/PatientsContext';
 import Patient from './Patient';
-import { fetchPatients } from '../api';
+import { observePatients } from '../api';
 
 export default function Patients()
 {
@@ -11,15 +11,17 @@ export default function Patients()
 
 	useEffect(() =>
 	{
-		fetchPatients()
-			.then((patients: PatientType[]) =>
-			{
-				setPatients(patients);
-			})
-			.catch((error) =>
-			{
-				console.log(error);
-			})
+		observePatients<PatientType>(setPatients);
+
+		// fetchPatients<PatientType>()
+		// 	.then((patients) =>
+		// 	{
+		// 		setPatients(patients);
+		// 	})
+		// 	.catch((error) =>
+		// 	{
+		// 		console.log(error);
+		// 	})
 	}, [setPatients])
 
 	return (

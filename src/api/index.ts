@@ -1,39 +1,99 @@
 import { PatientType } from "../Types";
+import firebaseDb from "../firebase";
+import firebase from "firebase";
+import { snapshotToArray } from "../helpers";
 
-const url = 'http://localhost:5000/patients';
+const collectionName = 'patients';
 
-export const fetchPatients = async () =>
+export const fetchPatients = async <T>(): Promise<T[]> =>
 {
-	return await fetch(url)
-		.then((res) => res.json());
+	let response: T[] = [];
+
+	await firebaseDb.child(collectionName).get()
+		.then((snapshot) =>
+		{
+			if (snapshot.exists())
+				response = snapshotToArray<T>(snapshot);
+		})
+		.catch((error) =>
+		{
+			alert(error);
+		});
+
+	return response;
 };
+
+export const observePatients = <T>(callback: (resp: T[]) => void) =>
+{
+	firebaseDb.child(collectionName).on("value", (snapshot) =>
+	{
+		if (snapshot.val() != null) 	
+		{
+			callback(snapshotToArray(snapshot));
+		}
+		else
+		{
+			callback([]);
+		}
+	});
+}
 
 export const createPatient = async (patient: PatientType) =>
 {
-	return await fetch(url, {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-		},
-		body: JSON.stringify(patient),
-	}).then((res) => res.json());
+	const data = { ...patient, createdAt: firebase.database.ServerValue.TIMESTAMP };
+
+	return await firebaseDb.child(collectionName).push(data);
 };
+
+export const doesExist = (pathToChild: string): boolean =>
+{
+	let result = false;
+
+	firebaseDb.child(pathToChild).once("value", (child) =>
+	{
+		result = child.exists();
+	}).catch(err =>
+	{
+		console.error(err);
+	});
+
+	return result;
+};
+
+
 
 export const updatePatient = async (id: string, patient: PatientType) =>
 {
-	return await fetch(`${url}/${id}`, {
-		method: 'PUT',
-		headers: {
-			'Content-Type': 'application/json',
-		},
-		body: JSON.stringify(patient),
-	}).then((res) => res.json());
+	const pathToChild = `${collectionName}/${id}`;
+
+	if (doesExist(pathToChild))
+	{
+		return firebaseDb.child(pathToChild).update(patient)
+			.catch((error) =>
+			{
+				alert(error);
+			});
+	}
+	else
+	{
+		alert("Patient not found");
+	}
 };
 
 export const deletePatient = async (id: string) =>
 {
-	return await fetch(`${url}/${id}`, { method: 'DELETE' })
-		.then((res) => res.json());
-};
+	const pathToChild = `${collectionName}/${id}`;
 
-// export const deletePatient = (id: string) => axios.delete(`${url}/${id}`);
+	if (doesExist(pathToChild))
+	{
+		return firebaseDb.child(pathToChild).remove()
+			.catch((error) =>
+			{
+				alert(error);
+			});
+	}
+	else
+	{
+		alert("Patient not found");
+	}
+};

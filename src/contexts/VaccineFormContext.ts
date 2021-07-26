@@ -10,7 +10,7 @@ export const intialVaccineFormValues: PatientForm = {
 
 export const VaccineFormContext = createContext<VaccineFormContextType>({
 	vaccineForm: intialVaccineFormValues,
-	setVaccineForm: (form) => console.warn('function not implemented')
+	setVaccineForm: (form) => console.warn('no patient yet')
 });
 
 export const useVaccineForm = (): VaccineFormContextType => useContext(VaccineFormContext);
