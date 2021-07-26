@@ -4,12 +4,10 @@ import Card from './Card';
 import Input from './Input';
 import Button from './Button';
 import { createPatient, updatePatient } from '../api';
-import { usePatients } from '../contexts/PatientsContext';
 import { intialVaccineFormValues, useVaccineForm } from '../contexts/VaccineFormContext';
 
 export default function VaccineForm()
 {
-	const { patients, setPatients } = usePatients();
 	const { vaccineForm, setVaccineForm } = useVaccineForm();
 
 	const submitHandler = (e: React.FormEvent<HTMLFormElement>) =>
