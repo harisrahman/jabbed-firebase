@@ -12,16 +12,21 @@ export function hasOnlyNumbers(str: string)
 	return str.match(/^[0-9]+$/) != null;
 }
 
-export function snapshotToArray<T>(snapshot: firebase.database.DataSnapshot)
+export function snapshotToArray<T>(snapshot: firebase.firestore.QuerySnapshot)
 {
 	const returnArr: T[] = [];
 
-	snapshot.forEach((childSnapshot) => 
+	snapshot.forEach((doc) => 
 	{
-		const item = childSnapshot.val();
-		item._id = childSnapshot.key;
+		const item = doc.data();
+		item._id = doc.id;
 
-		returnArr.push(item);
+		if (item.createdAt instanceof firebase.firestore.Timestamp)
+		{
+			item.createdAt = item.createdAt.toDate();
+		}
+
+		returnArr.push(item as T);
 	});
 
 	return returnArr;

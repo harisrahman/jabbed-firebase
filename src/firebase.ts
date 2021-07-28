@@ -14,4 +14,4 @@ const config = {
 // Initialize Firebase if not already intialised
 const firebaseDb = firebase.apps.length ? firebase.app() : firebase.initializeApp(config);
 
-export default firebaseDb.database().ref();
+export default firebaseDb.firestore();

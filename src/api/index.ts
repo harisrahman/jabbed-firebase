@@ -9,11 +9,10 @@ export const fetchPatients = async <T>(): Promise<T[]> =>
 {
 	let response: T[] = [];
 
-	await firebaseDb.child(collectionName).get()
-		.then((snapshot) =>
+	await firebaseDb.collection(collectionName).get()
+		.then((querySnapshot) =>
 		{
-			if (snapshot.exists())
-				response = snapshotToArray<T>(snapshot);
+			response = snapshotToArray<T>(querySnapshot);
 		})
 		.catch((error) =>
 		{
@@ -25,37 +24,32 @@ export const fetchPatients = async <T>(): Promise<T[]> =>
 
 export const observePatients = <T>(callback: (resp: T[]) => void) =>
 {
-	firebaseDb.child(collectionName).on("value", (snapshot) =>
+	firebaseDb.collection(collectionName).onSnapshot((snapshot) =>
 	{
-		if (snapshot.val() != null) 	
-		{
-			callback(snapshotToArray(snapshot));
-		}
-		else
-		{
-			callback([]);
-		}
+		callback(snapshotToArray(snapshot));
 	});
 }
 
 export const createPatient = async (patient: PatientType) =>
 {
-	const data = { ...patient, createdAt: firebase.database.ServerValue.TIMESTAMP };
+	const data = { ...patient, createdAt: firebase.firestore.FieldValue.serverTimestamp() };
 
-	return await firebaseDb.child(collectionName).push(data);
+	return await firebaseDb.collection(collectionName).add(data);
 };
 
-export const doesExist = (pathToChild: string): boolean =>
+export const doesExist = async (docRef: firebase.firestore.DocumentReference): Promise<boolean> =>
 {
 	let result = false;
 
-	firebaseDb.child(pathToChild).once("value", (child) =>
-	{
-		result = child.exists();
-	}).catch(err =>
-	{
-		console.error(err);
-	});
+	await docRef.get()
+		.then((doc) =>
+		{
+			result = doc.exists;
+		})
+		.catch((error) =>
+		{
+			console.log("Error getting document:", error);
+		});
 
 	return result;
 };
@@ -64,11 +58,13 @@ export const doesExist = (pathToChild: string): boolean =>
 
 export const updatePatient = async (id: string, patient: PatientType) =>
 {
-	const pathToChild = `${collectionName}/${id}`;
+	const docRef = firebaseDb.collection(collectionName).doc(id);
 
-	if (doesExist(pathToChild))
+	delete patient._id;
+
+	if (doesExist(docRef))
 	{
-		return firebaseDb.child(pathToChild).update(patient)
+		return docRef.update(patient)
 			.catch((error) =>
 			{
 				alert(error);
@@ -82,11 +78,11 @@ export const updatePatient = async (id: string, patient: PatientType) =>
 
 export const deletePatient = async (id: string) =>
 {
-	const pathToChild = `${collectionName}/${id}`;
+	const docRef = firebaseDb.collection(collectionName).doc(id);
 
-	if (doesExist(pathToChild))
+	if (await doesExist(docRef))
 	{
-		return firebaseDb.child(pathToChild).remove()
+		return docRef.delete()
 			.catch((error) =>
 			{
 				alert(error);

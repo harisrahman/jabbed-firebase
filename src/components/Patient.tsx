@@ -25,7 +25,7 @@ export default function Patient({ _id, name, email, phone, createdAt }: PropsTyp
 		if (_id)
 		{
 			deletePatient(_id)
-				.then((json: object) =>
+				.then(() =>
 				{
 					// Auto update due observePatients so this code is not needed
 
